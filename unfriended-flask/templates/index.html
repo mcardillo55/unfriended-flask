@@ -1,1 +1,16 @@
-Hello World from index.html!
+<html>
+<body>
+<h1>Hello World from index.html!</h1>
+
+{% if loggedIn %}
+    Logged in!!!
+    <ul>
+    {% for key, value in me.iteritems() %}
+        <li> {{ key }} : {{ value }} </li>
+    {% endfor %}
+{% else %}
+    <a href={{ url_for('facebook.login') }}>Log in here</a>
+{% endif %}
+
+</body>
+</html>
