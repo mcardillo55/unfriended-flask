@@ -5,8 +5,12 @@
 {% if loggedIn %}
     Logged in!!!
     <ul>
-    {% for key, value in me.iteritems() %}
-        <li> {{ key }} : {{ value }} </li>
+    {% for x in newFriends %}
+    <li> 
+    {% for key, value in x.iteritems() %}
+        {{ key }} : {{ value }}
+    {% endfor %}
+    </li>
     {% endfor %}
 {% else %}
     <a href={{ url_for('facebook.login') }}>Log in here</a>

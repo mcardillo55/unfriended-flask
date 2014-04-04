@@ -32,7 +32,7 @@ def facebook_authorized(resp):
             request.args['error_description']
         )
     session['oauth_token'] = (resp['access_token'], '')
-    return redirect(url_for('home.index'))
+    return redirect(url_for('unfriended.index'))
 
 @facebookOAuth.tokengetter
 def get_facebook_oauth_token():
