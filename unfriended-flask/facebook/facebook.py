@@ -8,20 +8,24 @@ facebook = Blueprint('facebook', __name__)
 oauth = OAuth()
 
 facebookOAuth = oauth.remote_app('facebook',
-    base_url='https://graph.facebook.com/',
-    request_token_url=None,
-    access_token_url='/oauth/access_token',
-    authorize_url='https://www.facebook.com/dialog/oauth',
-    consumer_key=FB_KEY,
-    consumer_secret=FB_SECRET,
-    request_token_params={'scope': 'email'}
-    )
+                                 base_url='https://graph.facebook.com/',
+                                 request_token_url=None,
+                                 access_token_url='/oauth/access_token',
+                                 authorize_url='https://www.facebook.com/'
+                                               'dialog/oauth',
+                                 consumer_key=FB_KEY,
+                                 consumer_secret=FB_SECRET,
+                                 request_token_params={'scope': 'email'}
+                                 )
+
 
 @facebook.route('/login')
 def login():
     return facebookOAuth.authorize(callback=url_for('.facebook_authorized',
-        next=request.args.get('next') or request.referrer or None,
-        _external=True))
+                                   next=request.args.get('next')
+                                   or request.referrer or None,
+                                   _external=True))
+
 
 @facebook.route('/login/authorized')
 @facebookOAuth.authorized_handler
@@ -33,6 +37,7 @@ def facebook_authorized(resp):
         )
     session['oauth_token'] = (resp['access_token'], '')
     return redirect(url_for('unfriended.index'))
+
 
 @facebookOAuth.tokengetter
 def get_facebook_oauth_token():

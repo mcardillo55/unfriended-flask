@@ -6,6 +6,7 @@ from facebook.facebook import facebookOAuth
 
 unfriended = Blueprint('unfriended', '__name__')
 
+
 @unfriended.route('/')
 def index():
     if 'oauth_token' in session:
@@ -15,7 +16,8 @@ def index():
         db.session.add(user)
         db.session.commit()
         newFriends = facebookOAuth.get('me/friends').data['data']
-        return render_template('index.html', loggedIn=loggedIn, newFriends = newFriends)
+        return render_template('index.html', loggedIn=loggedIn,
+                               newFriends=newFriends)
     else:
         loggedIn = False
         me = None

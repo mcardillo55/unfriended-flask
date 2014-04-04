@@ -6,10 +6,8 @@ from unfriended.unfriended import unfriended
 from facebook.facebook import facebook
 
 
-BLUEPRINT_MODULES = [
-        facebook,
-        unfriended
-        ]
+BLUEPRINT_MODULES = [facebook,
+                     unfriended]
 
 app = Flask(__name__)
 app.secret_key = APP_SECRET
