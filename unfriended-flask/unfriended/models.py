@@ -11,6 +11,7 @@ class User(db.Model):
         self.name = name
         self.fbId = fbId
 
+
 class Friend(db.Model):
     __tablename__ = 'friends'
     id = db.Column(db.Integer, primary_key=True)

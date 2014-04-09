@@ -7,12 +7,43 @@ from facebook.facebook import facebookOAuth
 unfriended = Blueprint('unfriended', '__name__')
 
 
-def createCurrentFriendsList(currentFriends):
-    currentFriendsList = []
-    for friend in currentFriends:
-        currentFriendsList.append(long(friend['id']))
-    return currentFriendsList
-        
+def compareFriends(first, second):
+    '''Takes two lists of longs, returns friends in first but not
+    in second'''
+    return list(set(first) - set(second))
+
+
+def storeNewUser(name, fbId):
+    user = User(name=name, fbId=fbId)
+    db.session.add(user)
+    db.session.commit()
+
+
+def storeFriends(userFbId, newFriends):
+    for friend in newFriends:
+        db.session.add(Friend(userFbId=userFbId, friendFbId=friend))
+    db.session.commit()
+
+
+def getStoredFriends(fbId):
+    ''' Takes long facebook ID. Returns friends as list of longs'''
+    friendQuery = Friend.query.filter_by(userFbId=fbId)
+    if friendQuery.first() is None:
+        return None
+    else:
+        storedFriends = []
+        for friend in friendQuery.all():
+            storedFriends.append(friend.friendFbId)
+        return storedFriends
+
+
+def getCurrentFriends(currentFriendsAPI):
+    ''' Takes result JSON data from FB API call. Returns list of longs '''
+    currentFriends = []
+    for friend in currentFriendsAPI:
+        currentFriends.append(long(friend['id']))
+    return currentFriends
+
 
 @unfriended.route('/')
 def index():
@@ -20,22 +51,20 @@ def index():
         loggedIn = True
         user = facebookOAuth.get('/me').data
         userId = user['id']
-        currentFriends = createCurrentFriendsList(facebookOAuth.get('me/friends').data['data'])
+        currentFriends = getCurrentFriends(facebookOAuth.get('me/friends')
+                                           .data['data'])
         if User.query.filter_by(fbId=userId).first() is None:
-            for friend in currentFriends:
-                db.session.add(Friend(userFbId=userId, friendFbId=friend))
-            user = User(name=user['name'], fbId=userId)
-            db.session.add(user)
-            db.session.commit()
-            return "First Visit!!!"
-        else:
+            # First time visiting site
+            storeNewUser(name=user['name'], fbId=userId)
             deletedFriends = []
-            oldFriends = Friend.query.filter_by(userFbId=userId).all()
-            for friend in oldFriends:
-                if friend.friendFbId not in currentFriends:
-                    deletedFriends.append(friend.friendFbId)
-            return render_template('index.html', loggedIn=loggedIn,
-                                   deletedFriends=deletedFriends)
+            newFriends = currentFriends
+        else:
+            storedFriends = getStoredFriends(userId)
+            deletedFriends = compareFriends(storedFriends, currentFriends)
+            newFriends = compareFriends(currentFriends, storedFriends)
+        storeFriends(userId, newFriends)
+        return render_template('index.html', loggedIn=loggedIn,
+                               deletedFriends=deletedFriends)
     else:
         loggedIn = False
         user = None
