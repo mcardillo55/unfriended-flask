@@ -5,11 +5,9 @@
 {% if loggedIn %}
     Logged in!!!
     <ul>
-    {% for x in newFriends %}
+    {% for friend in deletedFriends %}
     <li> 
-    {% for key, value in x.iteritems() %}
-        {{ key }} : {{ value }}
-    {% endfor %}
+        {{ friend }}
     </li>
     {% endfor %}
 {% else %}
