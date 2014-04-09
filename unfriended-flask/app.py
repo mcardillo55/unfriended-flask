@@ -11,10 +11,10 @@ BLUEPRINT_MODULES = [facebook,
 
 app = Flask(__name__)
 app.secret_key = APP_SECRET
+init_db(app)
 
 for module in BLUEPRINT_MODULES:
     app.register_blueprint(module)
 
 if __name__ == '__main__':
-    init_db(app)
     app.run(debug=True)

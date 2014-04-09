@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, session
 from models import User, Friend
 from database import db
+import urllib
+import json
+import time
 
 from facebook.facebook import facebookOAuth
 
@@ -49,13 +52,20 @@ def getFriendData(friendList):
     ''' Requests FB for name and picture from deleted friends. Does not add to
     list in the case of an error (most likely a deactivated account) '''
     deletedFriendsClean = []
+    batch = []
     for friend in friendList:
-        response = facebookOAuth.get('/%lu?fields=name,picture' % friend)
-        if response.status == 200:
-            data = response.data
-            cleanFriend = {'name': data['name'],
-                           'pic': data['picture']['data']['url']}
-            deletedFriendsClean.append(cleanFriend)
+        batch.append({'method': 'GET',
+                      'relative_url': "%lu?fields=name,picture" % friend})
+    if batch:
+        batch = urllib.urlencode({'batch': batch})
+        response = facebookOAuth.post('/', data=batch,
+                                      content_type='application/json').data
+        for entry in response:
+            if entry['code'] == 200:
+                userInfo = json.loads(entry['body'])
+                cleanFriend = {'name': userInfo['name'],
+                               'pic': userInfo['picture']['data']['url']}
+                deletedFriendsClean.append(cleanFriend)
     return deletedFriendsClean
 
 
