@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session
+from flask import Blueprint, render_template, session, g
 from models import User, Friend
 from database import db
 import urllib
@@ -67,6 +67,12 @@ def getFriendData(friendList):
                                'pic': userInfo['picture']['data']['url']}
                 deletedFriendsClean.append(cleanFriend)
     return deletedFriendsClean
+
+
+@unfriended.before_request
+def before_request():
+    g.request_start_time = time.time()
+    g.request_time = lambda: "%.5fs" % (time.time() - g.request_start_time)
 
 
 @unfriended.route('/')
