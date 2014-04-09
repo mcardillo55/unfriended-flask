@@ -7,9 +7,10 @@
     <ul>
     {% for friend in deletedFriends %}
     <li> 
-        {{ friend }}
+    {{ friend.name }} <img src="{{ friend.pic }}">
     </li>
     {% endfor %}
+    </ul>
 {% else %}
     <a href={{ url_for('facebook.login') }}>Log in here</a>
 {% endif %}

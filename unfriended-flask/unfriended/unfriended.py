@@ -45,6 +45,20 @@ def getCurrentFriends(currentFriendsAPI):
     return currentFriends
 
 
+def getFriendData(friendList):
+    ''' Requests FB for name and picture from deleted friends. Does not add to
+    list in the case of an error (most likely a deactivated account) '''
+    deletedFriendsClean = []
+    for friend in friendList:
+        response = facebookOAuth.get('/%lu?fields=name,picture' % friend)
+        if response.status == 200:
+            data = response.data
+            cleanFriend = {'name': data['name'],
+                           'pic': data['picture']['data']['url']}
+            deletedFriendsClean.append(cleanFriend)
+    return deletedFriendsClean
+
+
 @unfriended.route('/')
 def index():
     if 'oauth_token' in session:
@@ -64,7 +78,7 @@ def index():
             newFriends = compareFriends(currentFriends, storedFriends)
         storeFriends(userId, newFriends)
         return render_template('index.html', loggedIn=loggedIn,
-                               deletedFriends=deletedFriends)
+                               deletedFriends=getFriendData(deletedFriends))
     else:
         loggedIn = False
         user = None
