@@ -56,6 +56,18 @@ def getFriendData(friendList):
     for friend in friendList:
         batch.append({'method': 'GET',
                       'relative_url': "%lu?fields=name,picture" % friend})
+        #maximum FB batch size is 50
+        if len(batch) == 50:
+            deletedFriendsClean = deletedFriendsClean + sendBatch(batch)
+            batch = []
+    deletedFriendsClean = deletedFriendsClean + sendBatch(batch)
+    return deletedFriendsClean
+
+
+def sendBatch(batch):
+    '''Accepts a list of dicts of each deleted friend and returns the cleaned
+    list of pictures and names from the FB response'''
+    deletedFriendsClean = []
     if batch:
         batch = urllib.urlencode({'batch': batch})
         response = facebookOAuth.post('/', data=batch,
