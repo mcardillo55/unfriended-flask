@@ -1,0 +1,44 @@
+h1 {
+    margin-bottom: 5px;
+}
+
+h2 {
+    margin-top: 5px;
+}
+
+#deleted-friends {
+    margin: 0 auto;
+    width: 660px;
+    margin-bottom: 30px;
+}
+
+#footer {
+    float: right;
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+#site-wrap {
+    margin: 0 auto;
+    width: 800px;
+}
+
+#title {
+    padding-bottom: 30px;
+}
+
+.list-inline>li {
+    border: 1px solid black;
+    padding: 5px;
+    width: 215px;
+}
+
+.friend-name {
+    float: left;
+    width: 150px;
+}
+
+.friend-pic {
+    float: left;
+    width: 50px;
+}
