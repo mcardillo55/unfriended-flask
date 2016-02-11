@@ -13,13 +13,24 @@ Unfriended: Check who's unfriended you on Facebook!
         </div>
 
         {% if loggedIn %}
-            <ul class="list-inline" id="deleted-friends">
-            {% for friend in deletedFriends %}
-            <li> 
-            <div class="friend-name">{{ friend.name }}</div><img class="friend-pic" src="{{ friend.pic }}">
-            </li>
-            {% endfor %}
-            </ul>
+            {% if deletedFriends %}
+                <ul class="list-inline" id="deleted-friends">
+                {% for friend in deletedFriends %}
+                <li> 
+                <div class="friend-name">{{ friend.name }}</div><img class="friend-pic" src="{{ friend.pic }}">
+                </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <h5>Facebook no longer allows us to get your friends list automatically. Please go to your friends list manually and upload a copy of the resulting HTML file here below.</h5>
+                {% if error %}
+                    <h4 style="color:red">{{ error }}</h4>
+                {% endif %}
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <input type="file" name="fbHTML">
+                    <input type="submit" value="Upload">
+                </form>
+            {% endif %}
         {% else %}
             <a href={{ url_for('facebook.login') }}>Log in here</a>
         {% endif %}

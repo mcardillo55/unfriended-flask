@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, session, g
+from flask import Blueprint, render_template, session, g, request
 from models import User, Friend
 from database import db
+from BeautifulSoup import BeautifulSoup
 import urllib
 import json
 import time
@@ -40,8 +41,11 @@ def getStoredFriends(fbId):
         return storedFriends
 
 
-def getCurrentFriends(currentFriendsAPI):
-    ''' Takes result JSON data from FB API call. Returns list of longs '''
+def getCurrentFriends():
+    ''' Takes result JSON data from FB API call. Returns list of longs 
+        This function is no longer used, but keeping around in case FB
+        changes there API permissions in the future'''
+    facebookOAuth.get('me/friends').data['data']
     currentFriends = []
     for friend in currentFriendsAPI:
         currentFriends.append(long(friend['id']))
@@ -62,6 +66,23 @@ def getFriendData(friendList):
             batch = []
     deletedFriendsClean = deletedFriendsClean + sendBatch(batch)
     return deletedFriendsClean
+
+
+def parseFBHTML(htmlFile):
+    ''' Takes an input file of the full HTML from a users Facebook friend page
+        and searches for their friends FB user IDs in it. Returns a long list of
+        the friends FB user IDs. This will probably have to be updated frequently
+        as FB updates their code '''
+    soup = BeautifulSoup(htmlFile)
+    allFriends = soup.findAll("div", { "class": "fsl fwb fcb" })
+    friendIDs = []
+
+    for friend in allFriends:
+        datagt = friend.a.get("data-gt")
+        if datagt:
+            uid = json.loads(datagt)
+            friendIDs.append(long(uid["engagement"]["eng_tid"]))
+    return friendIDs
 
 
 def sendBatch(batch):
@@ -87,26 +108,44 @@ def before_request():
     g.request_time = lambda: "%.5fs" % (time.time() - g.request_start_time)
 
 
-@unfriended.route('/')
+@unfriended.route('/', methods=['GET', 'POST'])
 def index():
     if 'oauth_token' in session:
         loggedIn = True
-        user = facebookOAuth.get('/me').data
-        userId = user['id']
-        currentFriends = getCurrentFriends(facebookOAuth.get('me/friends')
-                                           .data['data'])
-        if User.query.filter_by(fbId=userId).first() is None:
-            # First time visiting site
-            storeNewUser(name=user['name'], fbId=userId)
-            deletedFriends = []
-            newFriends = currentFriends
+        if request.method == 'POST' :
+            fbHTML = request.files['fbHTML']
+            #Make sure the user actually uploaded a file
+            if fbHTML:
+                user = facebookOAuth.get('/me').data
+                userId = user['id']
+
+                #BeautifulSoup can bail out if we don't provide a correct HTML file
+                try:
+                    currentFriends = parseFBHTML(fbHTML)
+                except:
+                    return render_template('index.html', loggedIn=loggedIn, deletedFriends=False,
+                                            error="Error while trying to parse your HTML. Please try again.")
+                #Make sure that we actually found friends in the parsed HTML file
+                if currentFriends:
+                    if User.query.filter_by(fbId=userId).first() is None:
+                        # First time visiting site
+                        storeNewUser(name=user['name'], fbId=userId)
+                        deletedFriends = []
+                        newFriends = currentFriends
+                    else:
+                        storedFriends = getStoredFriends(userId)
+                        deletedFriends = compareFriends(storedFriends, currentFriends)
+                        newFriends = compareFriends(currentFriends, storedFriends)
+                    storeFriends(userId, newFriends)
+                    return render_template('index.html', loggedIn=loggedIn, deletedFriends=getFriendData(deletedFriends))
+                else:
+                    return render_template('index.html', loggedIn=loggedIn, deletedFriends=False,
+                                            error="No friends found in file. Are you sure you have the correct HTML file?")
+            else:
+                return render_template('index.html', loggedIn=loggedIn, deletedFriends=False,
+                                        error="Please upload a file.")
         else:
-            storedFriends = getStoredFriends(userId)
-            deletedFriends = compareFriends(storedFriends, currentFriends)
-            newFriends = compareFriends(currentFriends, storedFriends)
-        storeFriends(userId, newFriends)
-        return render_template('index.html', loggedIn=loggedIn,
-                               deletedFriends=getFriendData(deletedFriends))
+            return render_template('index.html', loggedIn=loggedIn, deletedFriends=False)
     else:
         loggedIn = False
         user = None
