@@ -5,6 +5,11 @@ from BeautifulSoup import BeautifulSoup
 import urllib
 import json
 import time
+import os
+import zipfile
+import StringIO
+import base64
+import sys
 
 from facebook.facebook import facebookOAuth
 
@@ -113,7 +118,19 @@ def index():
     if 'oauth_token' in session:
         loggedIn = True
         if request.method == 'POST' :
-            fbHTML = request.files['fbHTML']
+            #print request.form['zipHTML']
+            print sys.getsizeof(request.form['zipHTML'])
+            friendsString = StringIO.StringIO(base64.b64decode(request.form['zipHTML']))
+            zippedFriends = zipfile.ZipFile(friendsString, 'a')
+            #print zippedFriends.namelist()
+            fbHTML = zippedFriends.read('fbHTML.html')
+            #print fbHTML
+            #START OF FILE SIZE CODE
+            #fbHTML.stream.seek(0, os.SEEK_END)
+            #print fbHTML.stream.tell()
+            #fbHTML.stream.seek(0, 0)
+            #ENF OF FILE SIZE CODE 
+
             #Make sure the user actually uploaded a file
             if fbHTML:
                 user = facebookOAuth.get('/me').data

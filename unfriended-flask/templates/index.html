@@ -11,7 +11,6 @@ Unfriended: Check who's unfriended you on Facebook!
         <div id="title">
             <h1>Unfriended</h1><h4>Check who's unfriended you on Facebook!</h4>
         </div>
-
         {% if loggedIn %}
             {% if deletedFriends %}
                 <ul class="list-inline" id="deleted-friends">
@@ -26,9 +25,12 @@ Unfriended: Check who's unfriended you on Facebook!
                 {% if error %}
                     <h4 style="color:red">{{ error }}</h4>
                 {% endif %}
-                <form action="/" method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data">
                     <input type="file" name="fbHTML">
-                    <input type="submit" value="Upload">
+                    <input type="button" value="Upload" onclick="zipHTML()">
+                </form>
+                <form method="post" enctype="application/zip" id="zipped">
+                    <input type="hidden" name="zipHTML">
                 </form>
             {% endif %}
         {% else %}
@@ -38,4 +40,9 @@ Unfriended: Check who's unfriended you on Facebook!
         Generated in {{ g.request_time() }}
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='jszip.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='zipfriends.js') }}"></script>
 {% endblock %}
