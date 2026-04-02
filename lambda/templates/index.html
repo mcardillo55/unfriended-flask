@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Unfriended: Check who unfriended you on Facebook!</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="site-wrap">
+        <div id="title">
+            <h1>Unfriended</h1>
+            <h4>Check who unfriended you on Facebook!</h4>
+        </div>
+
+        <div class="archive-notice">
+            <p><strong>This app is now a read-only archive.</strong></p>
+            <p>
+                Unfriended was a Flask app that tracked your Facebook friends list over time
+                and showed you who had unfriended you. Users would log in with Facebook OAuth,
+                upload their friends-list HTML (after Facebook removed API access to friends lists),
+                and the app would compare the current list against stored data to find removed friends.
+            </p>
+            <p>
+                Facebook API changes made the core functionality impossible, so the app
+                has been preserved here as an archive.
+            </p>
+        </div>
+
+        <div class="stats">
+            <h3>Archived Data</h3>
+            <p>The database contains <strong>{{ total_records }}</strong> friend-list records
+               across <strong>{{ total_users }}</strong> tracked users.</p>
+
+            {% if users %}
+            <h4>Registered Users</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Friends Tracked</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.friend_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+
+        <div id="footer">
+            Generated in {{ g.request_time() }}
+        </div>
+    </div>
+</body>
+</html>
